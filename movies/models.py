@@ -23,6 +23,7 @@ class FavGenre(models.Model):
 class Movie(models.Model):
     name = models.CharField(max_length=30)
     genres = models.ManyToManyField(Genre, related_name='movies')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     release_date = models.DateField()
 
 

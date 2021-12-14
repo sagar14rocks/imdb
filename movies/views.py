@@ -2,8 +2,9 @@ from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import MovieSerializer
+from .serializers import MovieSerializer, FavGenreSerializer
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
@@ -23,7 +24,7 @@ class MovieView(APIView):
     def post(self, request):
         serializer = MovieSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(created_by=self.request.user)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
     def get_object(self, id):
@@ -82,7 +83,9 @@ class FavGenreView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = GenreSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response(serializer.data, status=HTTP_201_CREATED)
+        #inputdata = {"genre":request.data.get("genre"),"user":request.user.username}
+        favgenre = request.data.get("genre")
+        favgenre = get_object_or_404(Genre, name=favgenre)
+        if favgenre:
+            FavGenre.objects.create(user=request.user, genre=favgenre)
+        return Response({"success": True}, status=HTTP_201_CREATED)
